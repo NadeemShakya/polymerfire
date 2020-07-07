@@ -9,13 +9,13 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
   properties: {
     db: {
       type: Object,
-      computed: "__computeDb(app)"
+      computed: "__computeDb(app)",
     },
 
     ref: {
       type: Object,
       computed: "__computeRef(db, path, disabled)",
-      observer: "__refChanged"
+      observer: "__refChanged",
     },
 
     /**
@@ -25,12 +25,12 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
     path: {
       type: String,
       value: null,
-      observer: "__pathChanged"
+      observer: "__pathChanged",
     },
 
     isChanged: {
       type: Boolean,
-      notify: true
+      notify: true,
     },
 
     /**
@@ -40,7 +40,7 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
      */
     disabled: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /**
@@ -49,8 +49,8 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
      * @private
      */
     _unsubscribe: {
-      type: Object
-    }
+      type: Object,
+    },
   },
 
   observers: ["__onlineChanged(online)"],
@@ -59,7 +59,7 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
    * Set the firebase value.
    * @return {!firebase.Promise<void>}
    */
-  _setFirebaseValue: async function(path, value) {
+  _setFirebaseValue: async function (path, value) {
     this._log("Setting Firebase value at", path, "to", value);
     this.isChanged = false;
     const firestorePathValueObject = this._getKeyandValue(path);
@@ -80,17 +80,21 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
       result = docRef
         .update(newEntry)
         .then(() => (this.isChanged = true))
-        .catch(err => console.error(err));
+        .catch((err) => {
+          throw new Error(err);
+        });
     } else {
       result = docRef
         .set(newEntry, { merge: true })
         .then(() => (this.isChanged = true))
-        .catch(err => console.error(err));
+        .catch((err) => {
+          throw new Error(err);
+        });
     }
     return result;
   },
 
-  _getKeyandValue: function(path) {
+  _getKeyandValue: function (path) {
     var pathArray = path.substring(1, path.length).split("/");
     var actualPath = null;
     var field = null;
@@ -112,11 +116,11 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
     return actualPath;
   },
 
-  __computeDb: function(app) {
+  __computeDb: function (app) {
     return app ? app.firestore() : null;
   },
 
-  __computeRef: function(db, path) {
+  __computeRef: function (db, path) {
     if (
       db == null ||
       path == null ||
@@ -133,20 +137,20 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
    * Override this method if needed.
    * e.g. to detach or attach listeners.
    */
-  __refChanged: function(ref, oldRef) {
+  __refChanged: function (ref, oldRef) {
     return;
   },
 
-  __pathChanged: function(path, oldPath) {
+  __pathChanged: function (path, oldPath) {
     if (!this.disabled && !this.valueIsEmpty(this.data)) {
-      this.syncToMemory(function() {
+      this.syncToMemory(function () {
         this.data = this.zeroValue;
         this.__needSetData = true;
       });
     }
   },
 
-  __pathReady: function(path) {
+  __pathReady: function (path) {
     if (!path) {
       return false;
     }
@@ -157,7 +161,7 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
     return path && pieces.indexOf("") < 0 && pieces.length % 2 == 0;
   },
 
-  __onlineChanged: function(online) {
+  __onlineChanged: function (online) {
     if (!this.ref) {
       return;
     }
@@ -169,18 +173,18 @@ export const FirebaseFirestoreDocumentBehaviorImpl = {
     }
   },
 
-  setData: function(data, options) {
+  setData: function (data, options) {
     return this.ref.set(data, options);
   },
 
-  updateData: function(data) {
+  updateData: function (data) {
     return this.ref.update(data);
-  }
+  },
 };
 
 /** @polymerBehavior */
 export const FirebaseFirestoreDocumentBehavior = [
   AppStorageBehavior,
   FirebaseCommonBehavior,
-  FirebaseFirestoreDocumentBehaviorImpl
+  FirebaseFirestoreDocumentBehaviorImpl,
 ];
