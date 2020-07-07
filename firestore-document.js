@@ -59,14 +59,25 @@ Polymer({
    *     written to the new path.
    *
    */
-  saveValue: function (parentPath, key) {
+  saveValue: function (parentPath, key, comparision = true) {
     return new Promise(
       function (resolve, reject) {
         var path = null;
         if (!this.app) {
           reject(new Error("No app configured!"));
         }
-        if (key) {
+
+        if (!comparision && key) {
+          firebase
+            .firestore(this.app)
+            .collection(parentPath)
+            .doc(key)
+            .set(this.data)
+            .then((content) => {
+              resolve(true);
+            })
+            .catch((error) => reject(error));
+        } else if (key) {
           path = parentPath + "/" + key;
           resolve(this._setFirebaseValue(path, this.data));
         } else {
@@ -80,6 +91,7 @@ Polymer({
             })
             .catch((error) => reject(error));
         }
+
         this.path = path;
       }.bind(this)
     );
