@@ -164,9 +164,6 @@ Polymer({
       }.bind(this)
     );
   },
-  setStoredValue: function (path, value) {
-    return this._setFirebaseValue(path, value);
-  },
 
   __refChanged: function (ref, oldRef) {
     if (oldRef) {
