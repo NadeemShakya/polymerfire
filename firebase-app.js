@@ -23,6 +23,8 @@ import "@firebase/storage";
 import "@firebase/messaging";
 import "@firebase/firestore";
 
+export let firebaseAnalytics;
+
 /**
  * The firebase-app element is used for initializing and configuring your
  * connection to firebase. It is permanently initialized once attached and
@@ -40,7 +42,7 @@ Polymer({
      */
     name: {
       type: String,
-      value: ""
+      value: "",
     },
     /**
      * Your API key.
@@ -51,7 +53,7 @@ Polymer({
      * It looks like this: 'AIzaSyDTP-eiQezleFsV2WddFBAhF_WEzx_8v_g'
      */
     apiKey: {
-      type: String
+      type: String,
     },
     /**
      * The domain name to authenticate with.
@@ -62,7 +64,7 @@ Polymer({
      * For example: 'polymerfire-test.firebaseapp.com'
      */
     authDomain: {
-      type: String
+      type: String,
     },
     /**
      * The URL of your Firebase Realtime Database. You can find this
@@ -72,7 +74,7 @@ Polymer({
      * For example: 'https://polymerfire-test.firebaseio.com/'
      */
     databaseUrl: {
-      type: String
+      type: String,
     },
     /**
      * The Firebase Storage bucket for your project. You can find this
@@ -82,7 +84,7 @@ Polymer({
      */
     storageBucket: {
       type: String,
-      value: null
+      value: null,
     },
     /**
      * The Firebase Cloud Messaging Sender ID for your project. You can find
@@ -90,11 +92,19 @@ Polymer({
      */
     messagingSenderId: {
       type: String,
-      value: null
+      value: null,
     },
     projectId: {
       type: String,
-      value: null
+      value: null,
+    },
+    measurementId: {
+      type: String,
+      value: null,
+    },
+    appId: {
+      type: String,
+      value: null,
     },
     /**
      * The Firebase app object constructed from the other fields of
@@ -105,17 +115,19 @@ Polymer({
       type: Object,
       notify: true,
       computed:
-        "__computeApp(name, apiKey, authDomain, databaseUrl, storageBucket, messagingSenderId, projectId)"
-    }
+        "__computeApp(name, apiKey, authDomain, databaseUrl, storageBucket, messagingSenderId, projectId,measurementId,appId)",
+    },
   },
-  __computeApp: function(
+  __computeApp: function (
     name,
     apiKey,
     authDomain,
     databaseUrl,
     storageBucket,
     messagingSenderId,
-    projectId
+    projectId,
+    measurementId,
+    appId
   ) {
     if (apiKey && authDomain && databaseUrl) {
       var init = [
@@ -125,17 +137,26 @@ Polymer({
           databaseURL: databaseUrl,
           storageBucket: storageBucket,
           messagingSenderId: messagingSenderId,
-          projectId: projectId
-        }
+          projectId: projectId,
+          measurementId,
+          appId,
+        },
       ];
       if (name) {
         init.push(name);
       }
       firebase.initializeApp.apply(firebase, init);
       this.fire("firebase-app-initialized");
+      try {
+        import("@firebase/analytics").then((res) => {
+          firebaseAnalytics = firebase.app(name).analytics();
+        });
+      } catch (err) {
+        console.error("err", err);
+      }
     } else {
       return null;
     }
     return firebase.app(name);
-  }
+  },
 });
