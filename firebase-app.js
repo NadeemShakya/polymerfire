@@ -148,9 +148,11 @@ Polymer({
       firebase.initializeApp.apply(firebase, init);
       this.fire("firebase-app-initialized");
       try {
-        import("@firebase/analytics").then((res) => {
-          firebaseAnalytics = firebase.app(name).analytics();
-        });
+        if (measurementId) {
+          import("@firebase/analytics").then((res) => {
+            firebaseAnalytics = firebase.app(name).analytics();
+          });
+        }
       } catch (err) {
         console.error("err", err);
       }
